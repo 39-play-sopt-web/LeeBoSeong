@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+/* Emotion 테마가 제공하는 CSS 변수를 Tailwind 유틸리티와 연결합니다. */
+@theme inline {
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-ink: var(--app-ink);
+  --color-muted: var(--app-muted);
+  --color-accent: var(--app-accent);
+  --color-line: var(--app-line);
+}
