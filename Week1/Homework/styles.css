@@ -258,7 +258,7 @@ main {
 
 .interest-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(clamp(130px, 17vw, 210px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(8px, 1.2vw, 14px);
 }
 
@@ -342,4 +342,49 @@ main {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+/* 작은 화면에서는 목차를 위로 배치해 카드 두 열의 공간을 확보합니다. */
+@media (max-width: 767px) {
+  .page-layout {
+    display: block;
+  }
+
+  .side-nav {
+    top: var(--header-height);
+    z-index: 10;
+    padding-top: 16px;
+    background: var(--paper);
+  }
+
+  .side-nav ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .side-nav nav a {
+    justify-content: center;
+  }
+
+  .section {
+    scroll-margin-top: calc(var(--header-height) + 88px);
+  }
+}
+
+/* 화면 구간별로 과제 명세의 2 → 3 → 4 → 5열을 명시합니다. */
+@media (min-width: 768px) {
+  .interest-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .interest-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .interest-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
