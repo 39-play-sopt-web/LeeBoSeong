@@ -362,7 +362,6 @@ main {
   letter-spacing: 0.08em;
 }
 
-/* 작은 화면에서는 목차를 위로 배치해 카드 두 열의 공간을 확보합니다. */
 @media (max-width: 767px) {
   .page-layout {
     display: block;
@@ -388,7 +387,6 @@ main {
   }
 }
 
-/* 화면 구간별로 과제 명세의 2 → 3 → 4 → 5열을 명시합니다. */
 @media (min-width: 768px) {
   .interest-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
