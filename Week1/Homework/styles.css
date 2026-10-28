@@ -113,6 +113,7 @@ button {
 
 .site-title {
   overflow: hidden;
+  margin: 0;
   font-size: clamp(11px, 1.2vw, 13px);
   font-weight: 900;
   letter-spacing: clamp(0.02em, 0.1vw, 0.11em);
@@ -135,9 +136,12 @@ button {
   padding-top: clamp(24px, 4vw, 58px);
 }
 
-.side-nav nav {
+.side-nav ul {
   display: grid;
   gap: clamp(4px, 0.8vw, 6px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .side-nav nav a {
