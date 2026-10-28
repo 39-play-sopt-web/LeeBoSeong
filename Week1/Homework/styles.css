@@ -6,6 +6,10 @@
   --line: #d8d1c5;
   --red: #bd443c;
   --mint: #b8dbd4;
+  --on-dark: #fff;
+  --photo-placeholder: #d9d6ce;
+  --image-placeholder: #e4ded4;
+  --footer-background: #121920;
   --header-height: clamp(64px, 5vw + 40px, 76px);
 }
 
@@ -88,7 +92,7 @@ button {
   border: 1px solid var(--ink);
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-dark);
   font-size: clamp(14px, 1.5vw, 16px);
   font-weight: 800;
 }
@@ -202,7 +206,7 @@ main {
   min-width: 0;
   min-height: 0;
   margin: 0;
-  background: #d9d6ce;
+  background: var(--photo-placeholder);
 }
 
 .dump-photo:nth-child(3) {
@@ -246,7 +250,7 @@ main {
 .gallery-item img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: #e4ded4;
+  background: var(--image-placeholder);
   object-fit: contain;
 }
 
@@ -271,10 +275,10 @@ main {
   background: var(--card);
 }
 
-.interest-card>img {
+.interest-card > img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: #e4ded4;
+  background: var(--image-placeholder);
   object-fit: cover;
 }
 
@@ -315,7 +319,7 @@ main {
   margin-bottom: clamp(60px, 7vw, 90px);
   padding: clamp(28px, 5vw, 68px);
   background: var(--ink);
-  color: #fff;
+  color: var(--on-dark);
 }
 
 .letter-section h2 {
@@ -329,6 +333,20 @@ main {
   word-break: keep-all;
 }
 
+.letter-decorated::before,
+.letter-decorated::after {
+  display: inline-block;
+  content: "🌰";
+}
+
+.letter-decorated::before {
+  margin-right: 0.5em;
+}
+
+.letter-decorated::after {
+  margin-left: 0.5em;
+}
+
 .site-footer {
   display: flex;
   flex-wrap: wrap;
@@ -337,8 +355,8 @@ main {
   gap: 16px;
   min-height: clamp(60px, 6vw, 80px);
   padding: clamp(16px, 2.5vw, 22px) clamp(18px, 4vw, 60px);
-  background: #121920;
-  color: #fff;
+  background: var(--footer-background);
+  color: var(--on-dark);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
