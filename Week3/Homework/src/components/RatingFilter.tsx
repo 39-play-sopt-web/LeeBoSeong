@@ -8,7 +8,7 @@ interface RatingFilterProps {
 
 export default function RatingFilter({ selected, onSelect }: RatingFilterProps) {
   return (
-    <fieldset className="mt-8" aria-describedby="rating-filter-description">
+    <fieldset className="mt-8">
       <legend className="text-sm font-semibold">평점으로 골라보기</legend>
       <div className="mt-4 flex flex-wrap gap-2">
         {RATING_FILTERS.map((option) => (
@@ -27,9 +27,6 @@ export default function RatingFilter({ selected, onSelect }: RatingFilterProps) 
           </button>
         ))}
       </div>
-      <p id="rating-filter-description" className="mt-3 text-xs leading-6 text-muted">
-        범위의 양 끝 평점을 포함해요. 경계에 있는 영화는 두 범위에서 볼 수 있어요.
-      </p>
     </fieldset>
   );
 }

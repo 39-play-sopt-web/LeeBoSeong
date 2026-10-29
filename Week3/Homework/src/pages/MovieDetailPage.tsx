@@ -1,5 +1,33 @@
 import { useParams } from 'react-router';
 import PageMessage from '../components/PageMessage';
+import MovieDetailView from '../components/MovieDetailView';
+import { useMovieDetail } from '../hooks/useMovieDetail';
+
+function MovieDetailContent({ movieId }: { movieId: number }) {
+  const { movie, isLoading, error, notFound, retry } = useMovieDetail(movieId);
+
+  if (isLoading) {
+    return (
+      <div role="status" aria-label="영화 정보를 불러오고 있어요" className="py-8">
+        <p className="text-center text-sm text-muted">영화 정보를 불러오고 있어요…</p>
+        <div aria-hidden="true" className="mt-8 h-96 rounded-3xl border border-line bg-surface motion-safe:animate-pulse" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageMessage
+        title={notFound ? '영화를 찾을 수 없어요' : '영화 정보를 불러오지 못했어요'}
+        description={error}
+        onRetry={notFound ? undefined : retry}
+        isError
+      />
+    );
+  }
+
+  return movie ? <MovieDetailView movie={movie} /> : null;
+}
 
 export default function MovieDetailPage() {
   const { movieId } = useParams();
@@ -17,10 +45,5 @@ export default function MovieDetailPage() {
     );
   }
 
-  return (
-    <PageMessage
-      title="영화 상세 정보를 준비하고 있어요"
-      description="영화의 다양한 이야기를 곧 만나볼 수 있어요."
-    />
-  );
+  return <MovieDetailContent key={movieId} movieId={Number(movieId)} />;
 }

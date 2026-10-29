@@ -2,32 +2,76 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getApiErrorMessage, isRequestCanceled } from '../apis/errors';
 import { getMovies, MAX_MOVIE_PAGE } from '../apis/movies';
 import { getRatingFilter } from '../constants/ratingFilters';
-import type { MovieListResponse, RatingFilterId } from '../types/movie';
-
-type MovieListState =
-  | { status: 'loading' }
-  | { status: 'success'; data: MovieListResponse }
-  | { status: 'error'; message: string };
-
-type MoreMoviesState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'error'; message: string };
+import type { MovieSummary, RatingFilterId } from '../types/movie';
 
 interface MovieRequest {
   filterId: RatingFilterId;
   page: number;
   totalPages: number;
-  status: MoreMoviesState['status'];
+  status: 'idle' | 'loading' | 'error';
 }
 
 export function useMovieList() {
-  const [state, setState] = useState<MovieListState>({ status: 'loading' });
-  const [attempt, setAttempt] = useState(0);
+  const [movies, setMovies] = useState<MovieSummary[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState<RatingFilterId>('all');
-  const [moreState, setMoreState] = useState<MoreMoviesState>({ status: 'idle' });
+  const [attempt, setAttempt] = useState(0);
   const controllerRef = useRef<AbortController | null>(null);
   const requestRef = useRef<MovieRequest | null>(null);
+
+  const fetchPage = useCallback(async (
+    nextPage: number,
+    request: MovieRequest,
+    controller: AbortController,
+  ) => {
+    request.status = 'loading';
+
+    try {
+      const data = await getMovies({
+        page: nextPage,
+        rating: getRatingFilter(request.filterId).range,
+        signal: controller.signal,
+      });
+
+      if (controller.signal.aborted) return;
+
+      request.page = data.page;
+      request.totalPages = Math.min(data.total_pages, MAX_MOVIE_PAGE);
+      request.status = 'idle';
+      setPage(request.page);
+      setTotalPages(request.totalPages);
+      setMovies((previous) => {
+        if (nextPage === 1) return data.results;
+
+        const seenIds = new Set(previous.map((movie) => movie.id));
+        const newMovies = data.results.filter((movie) => {
+          if (seenIds.has(movie.id)) return false;
+          seenIds.add(movie.id);
+          return true;
+        });
+
+        return [...previous, ...newMovies];
+      });
+    } catch (cause: unknown) {
+      if (!controller.signal.aborted && !isRequestCanceled(cause)) {
+        request.status = 'error';
+        const message = getApiErrorMessage(cause);
+
+        if (nextPage === 1) setError(message);
+        else setLoadMoreError(message);
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,110 +79,62 @@ export function useMovieList() {
     controllerRef.current = controller;
     requestRef.current = request;
 
-    async function fetchMovies() {
-      try {
-        const data = await getMovies({
-          page: 1,
-          rating: getRatingFilter(filterId).range,
-          signal: controller.signal,
-        });
-
-        if (!controller.signal.aborted && requestRef.current === request) {
-          request.page = data.page;
-          request.totalPages = Math.min(data.total_pages, MAX_MOVIE_PAGE);
-          request.status = 'idle';
-          setState({ status: 'success', data });
-        }
-      } catch (error: unknown) {
-        if (!controller.signal.aborted && requestRef.current === request && !isRequestCanceled(error)) {
-          request.status = 'error';
-          setState({ status: 'error', message: getApiErrorMessage(error) });
-        }
-      }
+    async function fetchFirstPage() {
+      await fetchPage(1, request, controller);
     }
 
-    void fetchMovies();
+    void fetchFirstPage();
 
     return () => {
       controller.abort();
-
-      if (requestRef.current === request) {
-        controllerRef.current?.abort();
-        requestRef.current = null;
-      }
+      requestRef.current = null;
     };
-  }, [attempt, filterId]);
+  }, [attempt, filterId, fetchPage]);
 
   const loadMore = useCallback(async (retryFailedPage = false) => {
     const request = requestRef.current;
+    const controller = controllerRef.current;
 
     if (
-      !request || request.page === 0 || request.status === 'loading' ||
+      !request || !controller || controller.signal.aborted ||
+      request.page === 0 || request.status === 'loading' ||
       (request.status === 'error' && !retryFailedPage) ||
       request.page >= request.totalPages
     ) return;
 
-    request.status = 'loading';
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    setMoreState({ status: 'loading' });
+    setIsLoadingMore(true);
+    setLoadMoreError(null);
+    await fetchPage(request.page + 1, request, controller);
+  }, [fetchPage]);
 
-    try {
-      const data = await getMovies({
-        page: request.page + 1,
-        rating: getRatingFilter(request.filterId).range,
-        signal: controller.signal,
-      });
-
-      if (controller.signal.aborted || requestRef.current !== request) return;
-
-      request.page = data.page;
-      request.totalPages = Math.min(data.total_pages, MAX_MOVIE_PAGE);
-      request.status = 'idle';
-      setState((previous) => {
-        if (previous.status !== 'success') return previous;
-
-        const seenIds = new Set(previous.data.results.map((movie) => movie.id));
-        const newMovies = data.results.filter((movie) => {
-          if (seenIds.has(movie.id)) return false;
-          seenIds.add(movie.id);
-          return true;
-        });
-
-        return {
-          status: 'success',
-          data: { ...data, results: [...previous.data.results, ...newMovies] },
-        };
-      });
-      setMoreState({ status: 'idle' });
-    } catch (error: unknown) {
-      if (!controller.signal.aborted && requestRef.current === request && !isRequestCanceled(error)) {
-        request.status = 'error';
-        setMoreState({ status: 'error', message: getApiErrorMessage(error) });
-      }
-    }
-  }, []);
-
-  function retry() {
+  function resetList() {
     controllerRef.current?.abort();
     requestRef.current = null;
-    setState({ status: 'loading' });
-    setMoreState({ status: 'idle' });
+    setMovies([]);
+    setPage(0);
+    setTotalPages(0);
+    setIsLoading(true);
+    setError(null);
+    setIsLoadingMore(false);
+    setLoadMoreError(null);
+  }
+
+  function retry() {
+    resetList();
     setAttempt((previous) => previous + 1);
   }
 
   function selectFilter(nextFilterId: RatingFilterId) {
     if (nextFilterId === filterId) return;
 
-    controllerRef.current?.abort();
-    requestRef.current = null;
-    setState({ status: 'loading' });
-    setMoreState({ status: 'idle' });
+    resetList();
     setFilterId(nextFilterId);
   }
 
-  const hasMore = state.status === 'success' &&
-    state.data.page < Math.min(state.data.total_pages, MAX_MOVIE_PAGE);
+  const hasMore = page > 0 && page < totalPages;
 
-  return { state, retry, filterId, selectFilter, loadMore, moreState, hasMore };
+  return {
+    movies, page, isLoading, error, retry, filterId, selectFilter,
+    loadMore, isLoadingMore, loadMoreError, hasMore,
+  };
 }

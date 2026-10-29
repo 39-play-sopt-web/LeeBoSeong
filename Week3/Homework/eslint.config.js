@@ -6,7 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules']),
+  globalIgnores(['dist', 'node_modules', '**/*.test.*', '**/*.spec.*', 'src/test', '.local-tests', 'vitest.config.*']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

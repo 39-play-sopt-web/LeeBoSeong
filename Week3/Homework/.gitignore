@@ -7,3 +7,9 @@ dist/
 !.env.example
 *.log
 *.tsbuildinfo
+*.test.*
+*.spec.*
+src/test/
+.local-tests/
+vitest.config.*
+coverage/
