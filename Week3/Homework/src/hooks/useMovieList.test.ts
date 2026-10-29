@@ -1,10 +1,13 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getMovies } from '../apis/movies';
-import type { MovieListResponse } from '../types/movie';
+import type { MovieListResponse, MovieSummary } from '../types/movie';
 import { useMovieList } from './useMovieList';
 
-vi.mock('../apis/movies', () => ({ getMovies: vi.fn() }));
+vi.mock('../apis/movies', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../apis/movies')>(),
+  getMovies: vi.fn(),
+}));
 
 const mockGetMovies = vi.mocked(getMovies);
 const initialResponse: MovieListResponse = {
@@ -19,6 +22,27 @@ const filteredResponse: MovieListResponse = {
   total_pages: 2,
   total_results: 30,
 };
+
+function moviePage(page: number, ids: number[], totalPages = 3): MovieListResponse {
+  const movies: MovieSummary[] = ids.map((id) => ({
+    id,
+    title: `영화 ${id}`,
+    original_title: `Movie ${id}`,
+    original_language: 'ko',
+    overview: null,
+    poster_path: null,
+    backdrop_path: null,
+    release_date: '',
+    vote_average: 8,
+    vote_count: 100,
+    adult: false,
+    genre_ids: [],
+    popularity: 10,
+    video: false,
+  }));
+
+  return { page, results: movies, total_pages: totalPages, total_results: 60 };
+}
 
 function deferredResponse() {
   let resolve!: (value: MovieListResponse) => void;
@@ -140,6 +164,114 @@ describe('평점 필터 목록 조회', () => {
     const signal = mockGetMovies.mock.calls[0]?.[0]?.signal;
 
     expect(signal?.aborted).toBe(false);
+    unmount();
+    expect(signal?.aborted).toBe(true);
+  });
+
+  it('추가 요청을 잠그고 중복 ID를 제거해 기존 카드 뒤에 붙인다', async () => {
+    const next = deferredResponse();
+    mockGetMovies.mockResolvedValueOnce(moviePage(1, [1, 2])).mockReturnValueOnce(next.promise);
+    const { result } = renderHook(() => useMovieList());
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+
+    act(() => {
+      void result.current.loadMore();
+      void result.current.loadMore();
+    });
+    expect(mockGetMovies).toHaveBeenCalledTimes(2);
+    expect(mockGetMovies.mock.calls[1]?.[0]?.page).toBe(2);
+    expect(result.current.moreState.status).toBe('loading');
+    expect(result.current.state).toEqual({ status: 'success', data: moviePage(1, [1, 2]) });
+
+    await act(async () => {
+      next.resolve(moviePage(2, [2, 3, 3]));
+      await next.promise;
+    });
+    expect(result.current.state).toEqual({ status: 'success', data: moviePage(2, [1, 2, 3]) });
+    expect(result.current.hasMore).toBe(true);
+  });
+
+  it.each(['success', 'error'])('추가 조회 중 필터를 바꾸면 이전 페이지의 늦은 %s를 무시한다', async (outcome) => {
+    const next = deferredResponse();
+    mockGetMovies
+      .mockResolvedValueOnce(moviePage(1, [1]))
+      .mockReturnValueOnce(next.promise)
+      .mockResolvedValueOnce(moviePage(1, [10], 2));
+    const { result } = renderHook(() => useMovieList());
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+    act(() => { void result.current.loadMore(); });
+    const oldSignal = mockGetMovies.mock.calls[1]?.[0]?.signal;
+
+    act(() => result.current.selectFilter('8-9'));
+    expect(oldSignal?.aborted).toBe(true);
+    expect(result.current.state).toEqual({ status: 'loading' });
+    expect(mockGetMovies.mock.calls[2]?.[0]).toMatchObject({ page: 1, rating: { min: 8, max: 9 } });
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+
+    await act(async () => {
+      if (outcome === 'success') next.resolve(moviePage(2, [2]));
+      else next.reject(new Error('오래된 추가 요청 실패'));
+      await next.promise.catch(() => undefined);
+    });
+    expect(result.current.state).toEqual({ status: 'success', data: moviePage(1, [10], 2) });
+    expect(result.current.moreState.status).toBe('idle');
+  });
+
+  it('추가 조회 실패 시 카드를 유지하고 자동 반복 없이 같은 페이지를 재시도한다', async () => {
+    mockGetMovies
+      .mockResolvedValueOnce(moviePage(1, [1]))
+      .mockRejectedValueOnce(new Error('추가 조회 실패'))
+      .mockResolvedValueOnce(moviePage(2, [2]));
+    const { result } = renderHook(() => useMovieList());
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+    await act(async () => { await result.current.loadMore(); });
+
+    expect(result.current.moreState.status).toBe('error');
+    expect(result.current.state).toEqual({ status: 'success', data: moviePage(1, [1]) });
+    await act(async () => { await result.current.loadMore(); });
+    expect(mockGetMovies).toHaveBeenCalledTimes(2);
+
+    await act(async () => { await result.current.loadMore(true); });
+    expect(mockGetMovies.mock.calls[2]?.[0]?.page).toBe(2);
+    expect(result.current.state).toEqual({ status: 'success', data: moviePage(2, [1, 2]) });
+    expect(result.current.moreState.status).toBe('idle');
+  });
+
+  it('빈 페이지도 서버에 다음 페이지가 있으면 계속 조회하고 마지막에서 멈춘다', async () => {
+    mockGetMovies
+      .mockResolvedValueOnce(moviePage(1, []))
+      .mockResolvedValueOnce(moviePage(2, []))
+      .mockResolvedValueOnce(moviePage(3, [3]));
+    const { result } = renderHook(() => useMovieList());
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+    expect(result.current.hasMore).toBe(true);
+    await act(async () => { await result.current.loadMore(); });
+    expect(result.current.hasMore).toBe(true);
+    await act(async () => { await result.current.loadMore(); });
+
+    expect(result.current.state).toEqual({ status: 'success', data: moviePage(3, [3]) });
+    expect(result.current.hasMore).toBe(false);
+    await act(async () => { await result.current.loadMore(); });
+    expect(mockGetMovies).toHaveBeenCalledTimes(3);
+  });
+
+  it.each([0, 1])('총 페이지가 %i일 때 첫 응답 이후 더 요청하지 않는다', async (totalPages) => {
+    mockGetMovies.mockResolvedValue(moviePage(1, [], totalPages));
+    const { result } = renderHook(() => useMovieList());
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+
+    expect(result.current.hasMore).toBe(false);
+    await act(async () => { await result.current.loadMore(); });
+    expect(mockGetMovies).toHaveBeenCalledTimes(1);
+  });
+
+  it('페이지를 벗어나면 추가 요청도 취소한다', async () => {
+    mockGetMovies.mockResolvedValueOnce(moviePage(1, [1])).mockReturnValueOnce(deferredResponse().promise);
+    const { result, unmount } = renderHook(() => useMovieList());
+    await waitFor(() => expect(result.current.state.status).toBe('success'));
+    act(() => { void result.current.loadMore(); });
+    const signal = mockGetMovies.mock.calls[1]?.[0]?.signal;
+
     unmount();
     expect(signal?.aborted).toBe(true);
   });

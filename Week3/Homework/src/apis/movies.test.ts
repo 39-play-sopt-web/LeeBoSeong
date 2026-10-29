@@ -181,6 +181,7 @@ describe('TMDB 영화 API', () => {
 
     await expect(getMovies({ page: 0 })).rejects.toThrow(RangeError);
     await expect(getMovies({ page: 1.5 })).rejects.toThrow(RangeError);
+    await expect(getMovies({ page: 501 })).rejects.toThrow(RangeError);
     await expect(getMovieDetail(-1)).rejects.toThrow(RangeError);
     await expect(getMovieDetail(Number.NaN)).rejects.toThrow(RangeError);
     expect(adapter).not.toHaveBeenCalled();

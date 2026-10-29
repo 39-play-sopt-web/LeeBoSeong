@@ -5,13 +5,15 @@ import type {
 } from '../types/movie';
 import { tmdbClient } from './client';
 
+export const MAX_MOVIE_PAGE = 500;
+
 export async function getMovies({
   page = 1,
   rating,
   signal,
 }: MovieListOptions = {}): Promise<MovieListResponse> {
-  if (!Number.isSafeInteger(page) || page < 1) {
-    throw new RangeError('페이지 번호는 1 이상의 정수여야 합니다.');
+  if (!Number.isSafeInteger(page) || page < 1 || page > MAX_MOVIE_PAGE) {
+    throw new RangeError('페이지 번호는 1~500 사이의 정수여야 합니다.');
   }
 
   const { data } = await tmdbClient.get<MovieListResponse>('/discover/movie', {
