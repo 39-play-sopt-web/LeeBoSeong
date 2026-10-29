@@ -133,7 +133,8 @@ describe('TMDB 영화 API', () => {
     const { getMovies, getApiErrorMessage, adapter } = await loadApi();
 
     const error: unknown = await getMovies().catch((cause: unknown) => cause);
-    expect(getApiErrorMessage(error)).toContain('VITE_API_KEY');
+    expect(error).toBeInstanceOf(Error);
+    expect(getApiErrorMessage(error)).toContain('영화 서비스 연결');
     expect(adapter).not.toHaveBeenCalled();
   });
 

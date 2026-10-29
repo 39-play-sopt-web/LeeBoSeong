@@ -25,7 +25,6 @@ export async function getMovies({
     signal,
   });
 
-  // 페이지 정보도 필요하므로 results 배열만 꺼내지 않는다.
   return data;
 }
 

@@ -2,7 +2,7 @@
 
 [과제 안내](https://app.notion.com/p/sopt-official/3-React-TypeScript-API-3fa1e48dd96080abaef0ebf1df32361f)
 
-React + TypeScript와 TMDB API를 사용하는 영화 탐색 페이지입니다. 현재 **2단계 API 클라이언트·타입 정의**까지 구현했습니다. 통신 함수를 화면에 연결하는 목록·카드, 필터, 무한 스크롤과 상세 정보는 이후 단계에서 추가합니다.
+React + TypeScript와 TMDB API를 사용하는 영화 탐색 페이지입니다. 현재 **3단계 영화 목록·카드 UI**까지 구현했습니다. 첫 페이지 목록 조회, 카드와 상세 경로 이동을 연결했으며, 평점 필터 UI·무한 스크롤·상세 정보 표시는 이후 단계에서 추가합니다.
 
 ## 실행 방법
 
@@ -23,7 +23,7 @@ pnpm dev
 - Emotion 테마 → CSS 변수 → Tailwind `@theme inline`으로 연결해 색상 값을 한 곳에서 관리.
 - React Router 7의 `createBrowserRouter`, `RouterProvider`, 공통 `AppLayout`의 `Outlet` 사용.
 - `/`: 영화 목록 준비 화면.
-- `/movies/:movieId`: 상세 경로와 ID 검사. 실제 영화 정보는 다음 API 단계에서 연결.
+- `/movies/:movieId`: 상세 경로와 ID 검사. 실제 영화 정보는 상세 UI 단계에서 연결.
 - 그 외 경로: 없는 페이지 안내와 목록 복귀.
 
 Tailwind는 화면 스타일을 담당하고, Emotion은 과제에서 요구한 테마·전역 스타일에 사용합니다. 별도의 styled 컴포넌트는 사용하지 않습니다.
@@ -32,7 +32,7 @@ Tailwind는 화면 스타일을 담당하고, Emotion은 과제에서 요구한 
 
 `.env.example`을 `.env`로 복사해 TMDB의 **API Key (v3 auth)**를 `VITE_API_KEY`에 입력합니다. 기본 URL은 `https://api.themoviedb.org/3`입니다. 환경변수를 변경하면 개발 서버를 다시 실행합니다.
 
-현재 준비 화면은 키 없이 실행할 수 있습니다. 실제 API 함수를 호출할 때 키가 없으면 네트워크 요청 전에 설정 오류를 반환합니다. 아직 키를 발급하지 않아 실제 TMDB 서버 응답은 확인하지 않았습니다.
+키 없이 실행하면 목록 영역에 영화 서비스 연결 안내가 표시됩니다. 실제 API 함수를 호출할 때 키가 없으면 네트워크 요청 전에 설정 오류를 반환하며, 화면에는 구현 세부 정보가 없는 안내 문구를 표시합니다. 아직 키를 발급하지 않아 실제 TMDB 서버 응답은 확인하지 않았습니다.
 
 실제 `.env`, `node_modules`, `dist`는 Git에서 제외하고 변수 이름만 예시 파일로 공유합니다. `VITE_` 변수는 브라우저에 노출되므로 서버 비밀키나 관리자 비밀번호를 넣지 않습니다.
 
@@ -50,12 +50,24 @@ Axios의 응답 제네릭은 개발 중 타입 검사를 위한 계약입니다.
 
 참고: [TMDB 목록](https://developer.themoviedb.org/reference/discover-movie), [상세](https://developer.themoviedb.org/reference/movie-details), [인증](https://developer.themoviedb.org/docs/authentication-application), [Axios 요청 취소](https://axios.rest/pages/advanced/cancellation).
 
+## 3단계 영화 목록·카드
+
+- `useMovieList`: 첫 페이지를 조회하고 로딩·성공·실패 상태와 재시도를 관리합니다. 페이지를 벗어나면 요청을 취소하고 취소된 요청의 응답은 상태에 반영하지 않습니다.
+- `MovieListPage`: 상태에 따라 로딩 skeleton, 실패 안내, 빈 목록 안내 또는 카드 목록을 표시합니다.
+- `MovieCard`: 포스터·제목·개봉일·줄거리·평점을 표시하고 해당 영화의 상세 경로로 이동합니다. hover 시 테두리·그림자·확대 효과를 적용하고, 움직임 줄이기 설정을 반영합니다.
+- 이미지가 없거나 로딩에 실패하면 대체 화면을 표시합니다. 비어 있는 제목·개봉일·줄거리·평점에도 안내를 제공합니다.
+- `MovieListFeedback`: 실패·빈 결과 안내와 다시 불러오기 버튼을 표시합니다.
+- 포스터는 [TMDB 이미지 안내](https://developer.themoviedb.org/docs/image-basics)의 `https://image.tmdb.org/t/p/w500`과 이미지 경로를 조합합니다.
+
+목록은 첫 페이지까지만 표시합니다. 카드에서 상세 경로로 이동하면 현재는 상세 준비 화면이 나옵니다. 평점 조건은 API 함수에서 지원하지만 필터 UI는 다음 단계입니다.
+
 ## 폴더 구조
 
 ```text
 src/
 ├─ apis/        # Axios 인스턴스, 목록·상세 함수, 오류 안내와 테스트
-├─ components/  # 공통 레이아웃과 안내 화면
+├─ components/  # 공통 레이아웃, 영화 카드, 안내 화면
+├─ hooks/       # 목록 조회 상태와 재시도, 요청 취소
 ├─ pages/       # 목록·상세·없는 페이지
 ├─ router/      # 경로 설정
 ├─ styles/      # 테마, GlobalStyle, Tailwind 진입 CSS
@@ -70,7 +82,18 @@ src/
 - 브라우저에서 테마 색상과 Tailwind 스타일 적용 확인.
 - 상세 URL 직접 접속·새로고침과 목록 복귀 확인.
 - 잘못된 movieId와 없는 경로의 안내 확인.
-- 브라우저 콘솔 오류·경고 없음.
+- 초기 테마·라우팅 검증에서 브라우저 콘솔 오류·경고 없음.
+
+3단계는 로컬 테스트 API의 응답으로 브라우저에서 다음 항목을 확인했습니다. 테스트 API와 데이터는 과제 소스에 포함하지 않았습니다.
+
+- 정상 목록의 카드 정보, 정상 이미지, 누락 이미지·이미지 오류의 대체 화면.
+- 빈 개봉일·줄거리·평점, 긴 제목과 가로 넘침 없음.
+- 키보드로 카드 선택 → 해당 movieId 경로 → 목록 복귀.
+- 실패 안내 → 다시 불러오기 → 정상 목록 복구.
+- 빈 결과 안내, 지연 응답의 로딩 skeleton, 로딩 중 상세 경로 이동.
+- 테스트 설정을 제거한 실제 개발 환경에서 API 키 누락 안내.
+
+테스트 중에는 의도한 이미지 404와 API 503 응답이 발생했습니다. 실제 TMDB 목록·상세 응답 검증은 API 키 설정 후 진행합니다.
 
 ## 구현 순서
 

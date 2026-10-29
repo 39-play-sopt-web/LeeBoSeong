@@ -41,7 +41,6 @@ export interface SpokenLanguage {
   name: string;
 }
 
-// 상세 응답에는 목록의 genre_ids 대신 genres가 들어온다.
 export interface MovieDetail extends MovieBase {
   genres: MovieGenre[];
   runtime: number | null;
@@ -52,7 +51,6 @@ export interface MovieDetail extends MovieBase {
   spoken_languages: SpokenLanguage[];
 }
 
-// TMDB의 gte/lte는 경계값을 포함한다.
 export interface RatingRange {
   min?: number;
   max?: number;

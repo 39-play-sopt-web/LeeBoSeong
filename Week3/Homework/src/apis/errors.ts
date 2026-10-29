@@ -7,7 +7,7 @@ export function isRequestCanceled(error: unknown): boolean {
 
 export function getApiErrorMessage(error: unknown): string {
   if (error instanceof ApiConfigurationError) {
-    return error.message;
+    return '영화 서비스 연결을 준비하고 있어요. 잠시 후 다시 시도해 주세요.';
   }
 
   if (axios.isAxiosError<unknown>(error)) {
