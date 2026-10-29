@@ -25,7 +25,13 @@ export async function getMovies({
     signal,
   });
 
-  return data;
+  return {
+    ...data,
+    results: data.results.filter((movie) => (
+      (rating?.min === undefined || movie.vote_average >= rating.min) &&
+      (rating?.max === undefined || movie.vote_average <= rating.max)
+    )),
+  };
 }
 
 export async function getMovieDetail(

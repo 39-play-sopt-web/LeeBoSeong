@@ -56,6 +56,8 @@ export interface RatingRange {
   max?: number;
 }
 
+export type RatingFilterId = 'all' | '9-up' | '8-9' | '7-8' | '6-7' | '6-down';
+
 export interface MovieListOptions {
   page?: number;
   rating?: RatingRange;

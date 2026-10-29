@@ -128,6 +128,24 @@ describe('TMDB 영화 API', () => {
     expect(adapter.mock.calls[0]?.[0].url).toBe('/movie/550');
   });
 
+  it('서버가 범위 밖 평점을 반환해도 제외하며 경계값과 페이지 정보는 유지한다', async () => {
+    const response: MovieListResponse = {
+      ...movieList,
+      results: [
+        { ...movie, id: 1, vote_average: 6.959 },
+        { ...movie, id: 2, vote_average: 7 },
+        { ...movie, id: 3, vote_average: 8 },
+        { ...movie, id: 4, vote_average: 8.001 },
+      ],
+    };
+    const { getMovies } = await loadApi(response);
+
+    expect(await getMovies({ page: 2, rating: { min: 7, max: 8 } })).toEqual({
+      ...response,
+      results: [response.results[1], response.results[2]],
+    });
+  });
+
   it('키가 없으면 외부 요청 전에 설정 오류를 알린다', async () => {
     vi.stubEnv('VITE_API_KEY', '  ');
     const { getMovies, getApiErrorMessage, adapter } = await loadApi();
