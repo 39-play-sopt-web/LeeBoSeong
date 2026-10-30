@@ -1,9 +1,5 @@
 import axios from 'axios';
 
-export function isRequestCanceled(error: unknown): boolean {
-  return axios.isCancel(error);
-}
-
 export function isNotFoundError(error: unknown): boolean {
   return axios.isAxiosError<unknown>(error) && error.response?.status === 404;
 }

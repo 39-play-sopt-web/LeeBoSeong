@@ -1,15 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getApiErrorMessage, isRequestCanceled } from '../apis/errors';
+import { getApiErrorMessage } from '../apis/errors';
 import { getMovies, MAX_MOVIE_PAGE } from '../apis/movies';
 import { getRatingFilter } from '../constants/ratingFilters';
 import type { MovieSummary, RatingFilterId } from '../types/movie';
-
-interface MovieRequest {
-  filterId: RatingFilterId;
-  page: number;
-  totalPages: number;
-  status: 'idle' | 'loading' | 'error';
-}
 
 export function useMovieList() {
   const [movies, setMovies] = useState<MovieSummary[]>([]);
@@ -21,95 +14,85 @@ export function useMovieList() {
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState<RatingFilterId>('all');
   const [attempt, setAttempt] = useState(0);
-  const controllerRef = useRef<AbortController | null>(null);
-  const requestRef = useRef<MovieRequest | null>(null);
+  const requestIdRef = useRef(0);
+  const isFetchingRef = useRef(false);
 
   const fetchPage = useCallback(async (
     nextPage: number,
-    request: MovieRequest,
-    controller: AbortController,
+    requestId: number,
   ) => {
-    request.status = 'loading';
-
     try {
       const data = await getMovies({
         page: nextPage,
-        rating: getRatingFilter(request.filterId).range,
-        signal: controller.signal,
+        rating: getRatingFilter(filterId).range,
       });
 
-      if (controller.signal.aborted) return;
+      if (requestId !== requestIdRef.current) return;
 
-      request.page = data.page;
-      request.totalPages = Math.min(data.total_pages, MAX_MOVIE_PAGE);
-      request.status = 'idle';
-      setPage(request.page);
-      setTotalPages(request.totalPages);
+      setPage(data.page);
+      setTotalPages(Math.min(data.total_pages, MAX_MOVIE_PAGE));
       setMovies((previous) => {
         if (nextPage === 1) return data.results;
 
-        const seenIds = new Set(previous.map((movie) => movie.id));
-        const newMovies = data.results.filter((movie) => {
-          if (seenIds.has(movie.id)) return false;
-          seenIds.add(movie.id);
-          return true;
-        });
+        const movieIds = previous.map((movie) => movie.id);
+        const nextMovies = [...previous];
 
-        return [...previous, ...newMovies];
+        for (const movie of data.results) {
+          if (!movieIds.includes(movie.id)) {
+            movieIds.push(movie.id);
+            nextMovies.push(movie);
+          }
+        }
+
+        return nextMovies;
       });
     } catch (cause: unknown) {
-      if (!controller.signal.aborted && !isRequestCanceled(cause)) {
-        request.status = 'error';
+      if (requestId === requestIdRef.current) {
         const message = getApiErrorMessage(cause);
 
         if (nextPage === 1) setError(message);
         else setLoadMoreError(message);
       }
     } finally {
-      if (!controller.signal.aborted) {
+      if (requestId === requestIdRef.current) {
+        isFetchingRef.current = false;
         setIsLoading(false);
         setIsLoadingMore(false);
       }
     }
-  }, []);
+  }, [filterId]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const request: MovieRequest = { filterId, page: 0, totalPages: 0, status: 'loading' };
-    controllerRef.current = controller;
-    requestRef.current = request;
+    requestIdRef.current += 1;
+    const requestId = requestIdRef.current;
+    isFetchingRef.current = true;
 
     async function fetchFirstPage() {
-      await fetchPage(1, request, controller);
+      await fetchPage(1, requestId);
     }
 
     fetchFirstPage();
 
     return () => {
-      controller.abort();
-      requestRef.current = null;
+      requestIdRef.current += 1;
     };
-  }, [attempt, filterId, fetchPage]);
+  }, [attempt, fetchPage]);
 
   const loadMore = useCallback(async (retryFailedPage = false) => {
-    const request = requestRef.current;
-    const controller = controllerRef.current;
-
     if (
-      !request || !controller || controller.signal.aborted ||
-      request.page === 0 || request.status === 'loading' ||
-      (request.status === 'error' && !retryFailedPage) ||
-      request.page >= request.totalPages
+      isFetchingRef.current || page === 0 || page >= totalPages ||
+      (loadMoreError && !retryFailedPage)
     ) return;
 
+    isFetchingRef.current = true;
     setIsLoadingMore(true);
     setLoadMoreError(null);
-    await fetchPage(request.page + 1, request, controller);
-  }, [fetchPage]);
+    await fetchPage(page + 1, requestIdRef.current);
+  }, [page, totalPages, loadMoreError, fetchPage]);
 
   function resetList() {
-    controllerRef.current?.abort();
-    requestRef.current = null;
+    requestIdRef.current += 1;
+    isFetchingRef.current = true;
     setMovies([]);
     setPage(0);
     setTotalPages(0);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getApiErrorMessage, isNotFoundError, isRequestCanceled } from '../apis/errors';
+import { getApiErrorMessage, isNotFoundError } from '../apis/errors';
 import { getMovieDetail } from '../apis/movies';
 import type { MovieDetail } from '../types/movie';
 
@@ -11,30 +11,30 @@ export function useMovieDetail(movieId: number) {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let ignore = false;
 
     async function fetchMovie() {
       try {
-        const data = await getMovieDetail(movieId, controller.signal);
+        const data = await getMovieDetail(movieId);
 
-        if (!controller.signal.aborted) {
+        if (!ignore) {
           setMovie(data);
           setError(null);
           setNotFound(false);
         }
       } catch (cause: unknown) {
-        if (!controller.signal.aborted && !isRequestCanceled(cause)) {
+        if (!ignore) {
           setMovie(null);
           setError(getApiErrorMessage(cause));
           setNotFound(isNotFoundError(cause));
         }
       } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
+        if (!ignore) setIsLoading(false);
       }
     }
 
     fetchMovie();
-    return () => controller.abort();
+    return () => { ignore = true; };
   }, [movieId, attempt]);
 
   function retry() {

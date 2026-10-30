@@ -10,7 +10,6 @@ export const MAX_MOVIE_PAGE = 500;
 export async function getMovies({
   page = 1,
   rating,
-  signal,
 }: MovieListOptions = {}): Promise<MovieListResponse> {
   if (!Number.isSafeInteger(page) || page < 1 || page > MAX_MOVIE_PAGE) {
     throw new RangeError('페이지 번호는 1~500 사이의 정수여야 합니다.');
@@ -24,7 +23,6 @@ export async function getMovies({
       'vote_average.gte': rating?.min,
       'vote_average.lte': rating?.max,
     },
-    signal,
   });
 
   return {
@@ -36,17 +34,12 @@ export async function getMovies({
   };
 }
 
-export async function getMovieDetail(
-  movieId: number,
-  signal?: AbortSignal,
-): Promise<MovieDetail> {
+export async function getMovieDetail(movieId: number): Promise<MovieDetail> {
   if (!Number.isSafeInteger(movieId) || movieId < 1) {
     throw new RangeError('영화 번호는 1 이상의 정수여야 합니다.');
   }
 
-  const { data } = await tmdbClient.get<MovieDetail>(`/movie/${movieId}`, {
-    signal,
-  });
+  const { data } = await tmdbClient.get<MovieDetail>(`/movie/${movieId}`);
 
   return data;
 }
