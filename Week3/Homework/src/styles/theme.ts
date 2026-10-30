@@ -1,4 +1,18 @@
-export const theme = {
+export interface ThemeColors {
+  canvas: string;
+  surface: string;
+  ink: string;
+  muted: string;
+  accent: string;
+  line: string;
+}
+
+interface AppTheme {
+  colors: ThemeColors;
+  fontFamily: string;
+}
+
+export const theme: AppTheme = {
   colors: {
     canvas: '#15161d',
     surface: '#1d1f28',
@@ -10,5 +24,3 @@ export const theme = {
   fontFamily:
     '"Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif',
 };
-
-export type AppTheme = typeof theme;

@@ -83,7 +83,7 @@ export function useMovieList() {
       await fetchPage(1, request, controller);
     }
 
-    void fetchFirstPage();
+    fetchFirstPage();
 
     return () => {
       controller.abort();

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { ApiConfigurationError } from './client';
 
 export function isRequestCanceled(error: unknown): boolean {
   return axios.isCancel(error);
@@ -10,10 +9,6 @@ export function isNotFoundError(error: unknown): boolean {
 }
 
 export function getApiErrorMessage(error: unknown): string {
-  if (error instanceof ApiConfigurationError) {
-    return '영화 서비스 연결을 준비하고 있어요. 잠시 후 다시 시도해 주세요.';
-  }
-
   if (axios.isAxiosError<unknown>(error)) {
     if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
       return '응답이 늦어지고 있어요. 잠시 후 다시 시도해 주세요.';

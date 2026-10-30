@@ -33,7 +33,7 @@ export function useMovieDetail(movieId: number) {
       }
     }
 
-    void fetchMovie();
+    fetchMovie();
     return () => controller.abort();
   }, [movieId, attempt]);
 

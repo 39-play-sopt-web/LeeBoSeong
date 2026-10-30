@@ -92,7 +92,9 @@ export default function MovieListPage() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => void loadMore(true)}
+                    onClick={() => {
+                      loadMore(true);
+                    }}
                     className="cursor-pointer rounded-full border border-line px-6 py-3 text-sm font-semibold text-accent hover:border-accent"
                   >
                     다음 영화 다시 불러오기
@@ -102,7 +104,9 @@ export default function MovieListPage() {
               {!loadMoreError && hasMore && (
                 <button
                   type="button"
-                  onClick={() => void loadMore()}
+                  onClick={() => {
+                    loadMore();
+                  }}
                   disabled={isLoadingMore}
                   className="cursor-pointer rounded-full border border-line px-6 py-3 text-sm font-semibold text-accent hover:border-accent disabled:cursor-wait disabled:opacity-50"
                 >

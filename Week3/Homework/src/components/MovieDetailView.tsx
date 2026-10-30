@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import type { MovieDetail } from '../types/movie';
-import { formatCount, formatCountry, formatLanguage, formatMoney, formatRuntime, formatStatus } from '../utils/formatMovie';
+import { formatCount, formatMoney, formatRuntime, formatStatus } from '../utils/formatMovie';
 import MovieImage from './MovieImage';
 
 interface MovieDetailViewProps {
@@ -9,6 +9,7 @@ interface MovieDetailViewProps {
 
 export default function MovieDetailView({ movie }: MovieDetailViewProps) {
   const title = movie.title.trim() || '제목 미정';
+  const originalLanguage = movie.spoken_languages.find((language) => language.iso_639_1 === movie.original_language);
   const facts = [
     { label: '평점', value: movie.vote_count > 0 ? `★ ${movie.vote_average.toFixed(1)} / 10` : '정보 없음' },
     { label: '상영 시간', value: formatRuntime(movie.runtime) },
@@ -17,9 +18,9 @@ export default function MovieDetailView({ movie }: MovieDetailViewProps) {
   ];
   const information = [
     { label: '원제', value: movie.original_title.trim() || '정보 없음' },
-    { label: '원어', value: formatLanguage(movie.original_language) },
-    { label: '제작 국가', value: movie.production_countries.map((country) => formatCountry(country.iso_3166_1, country.name)).join(', ') || '정보 없음' },
-    { label: '사용 언어', value: movie.spoken_languages.map((language) => formatLanguage(language.iso_639_1, language.name || language.english_name)).join(', ') || '정보 없음' },
+    { label: '원어', value: originalLanguage?.name || originalLanguage?.english_name || movie.original_language || '정보 없음' },
+    { label: '제작 국가', value: movie.production_countries.map((country) => country.name || country.iso_3166_1).join(', ') || '정보 없음' },
+    { label: '사용 언어', value: movie.spoken_languages.map((language) => language.name || language.english_name || language.iso_639_1).join(', ') || '정보 없음' },
     { label: '예산 (USD)', value: formatMoney(movie.budget) },
     { label: '수익 (USD)', value: formatMoney(movie.revenue) },
   ];
