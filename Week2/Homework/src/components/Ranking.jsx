@@ -27,7 +27,7 @@ function Ranking({ records, onReset }) {
                 <td>{index + 1}</td>
                 <td>Level {record.level}</td>
                 <td>{record.time.toFixed(2)}초</td>
-                <td>{record.playedAt}</td>
+                <td>{new Date(record.playedAt).toLocaleString('ko-KR')}</td>
               </tr>
             );
           })}
@@ -65,10 +65,10 @@ const Title = styled.h1`
 
 const ResetButton = styled.button`
   padding: 6px 10px;
-  border: 1px solid #cadbd2;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background-color: white;
-  color: #65776f;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
 
   cursor: pointer;
 `;
@@ -76,26 +76,26 @@ const ResetButton = styled.button`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  background-color: var(--color-surface);
   text-align: center;
   font-size: 14px;
 
   th {
     padding: 16px 8px;
-    border-bottom: 1px solid #d7e6df;
-    background-color: #e0f0e8;
+    border-bottom: 1px solid var(--color-divider);
+    background-color: var(--color-primary-light);
   }
 
   td {
     padding: 16px 8px;
-    border-bottom: 1px solid #d7e6df;
+    border-bottom: 1px solid var(--color-divider);
   }
 `;
 
 const EmptyMessage = styled.p`
   margin: 0;
   padding: 64px 16px;
-  background-color: white;
-  color: #65776f;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
   text-align: center;
 `;

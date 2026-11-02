@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { LEVEL } from '../constants/game.js';
 
 function Header({ selectedMenu, onMenuChange, elapsedTime }) {
   let gameClass = '';
@@ -26,8 +27,8 @@ function Header({ selectedMenu, onMenuChange, elapsedTime }) {
       <GameInfo>
         <LevelLabel>
           레벨
-          <LevelSelect defaultValue="1">
-            <option value="1">Level 1</option>
+          <LevelSelect defaultValue={LEVEL}>
+            <option value={LEVEL}>Level {LEVEL}</option>
           </LevelSelect>
         </LevelLabel>
         <Timer>시간: {elapsedTime.toFixed(2)}초</Timer>
@@ -43,6 +44,7 @@ function Header({ selectedMenu, onMenuChange, elapsedTime }) {
           <MenuButton
             type="button"
             className={gameClass}
+            aria-current={selectedMenu === 'game' ? 'true' : undefined}
             onClick={handleGameClick}
           >
             게임
@@ -50,6 +52,7 @@ function Header({ selectedMenu, onMenuChange, elapsedTime }) {
           <MenuButton
             type="button"
             className={rankingClass}
+            aria-current={selectedMenu === 'ranking' ? 'true' : undefined}
             onClick={handleRankingClick}
           >
             랭킹
@@ -64,8 +67,8 @@ function Header({ selectedMenu, onMenuChange, elapsedTime }) {
 export default Header;
 
 const HeaderBar = styled.header`
-  background-color: white;
-  border-bottom: 1px solid #d7e6df;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
 `;
 
 const HeaderInner = styled.div`
@@ -95,12 +98,12 @@ const MenuButton = styled.button`
   border: none;
   border-radius: 8px;
   background-color: transparent;
-  color: #53665f;
+  color: var(--color-menu-text);
   cursor: pointer;
 
   &.active {
-    background-color: #e0f0e8;
-    color: #286c58;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
     font-weight: bold;
   }
 `;
@@ -121,10 +124,10 @@ const LevelLabel = styled.label`
 
 const LevelSelect = styled.select`
   padding: 8px;
-  border: 1px solid #cadbd2;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background-color: white;
-  color: #243b35;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 `;
 
 const Timer = styled.span`
