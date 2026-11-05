@@ -51,12 +51,46 @@ export default function GlobalStyle() {
         '.board-header nav a': {
           color: theme.colors.text,
         },
+        '.board-header nav button': {
+          padding: 0,
+          border: 0,
+          background: 'none',
+          color: theme.colors.text,
+          textDecoration: 'underline',
+        },
         '.board-header nav a[aria-current="page"]': {
           color: theme.colors.primary,
           fontWeight: 700,
         },
         'main a': {
           color: theme.colors.primary,
+        },
+        '.auth-form': {
+          display: 'grid',
+          gap: 12,
+          maxWidth: 360,
+          marginBottom: 20,
+        },
+        '.auth-form select': {
+          padding: '8px 12px',
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: 6,
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.text,
+        },
+        '.auth-submit': {
+          padding: '8px 12px',
+          border: 0,
+          borderRadius: 6,
+          backgroundColor: theme.colors.primary,
+          color: theme.colors.surface,
+          transition: 'background-color 150ms ease',
+        },
+        '.auth-submit:hover:enabled': {
+          backgroundColor: '#2856c2',
+        },
+        '.auth-submit:disabled': {
+          opacity: 0.55,
         },
         '.post-preview': {
           marginTop: 24,
