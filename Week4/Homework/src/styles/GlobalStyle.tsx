@@ -92,15 +92,65 @@ export default function GlobalStyle() {
         '.auth-submit:disabled': {
           opacity: 0.55,
         },
-        '.post-preview': {
-          marginTop: 24,
+        '.post-search': {
+          display: 'grid',
+          gap: 8,
+          marginBottom: 24,
+        },
+        '.post-search-fields': {
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 8,
+        },
+        '.post-search-fields input': {
+          flex: '1 1 180px',
+          minWidth: 0,
+          padding: '8px 12px',
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: 6,
+        },
+        '.post-search-fields button': {
+          padding: '8px 16px',
+          border: 0,
+          borderRadius: 6,
+          backgroundColor: theme.colors.primary,
+          color: theme.colors.surface,
+        },
+        '.post-search-fields button:disabled': {
+          opacity: 0.55,
+        },
+        '.post-list': {
+          display: 'grid',
+          gap: 12,
+          listStyle: 'none',
+          margin: 0,
+          padding: 0,
+        },
+        'main a.post-preview': {
+          display: 'block',
           padding: 16,
           border: `1px solid ${theme.colors.border}`,
           borderRadius: 8,
+          color: theme.colors.text,
+          textDecoration: 'none',
+          overflowWrap: 'anywhere',
         },
         '.post-preview h2': {
           margin: 0,
           fontSize: 18,
+        },
+        '.post-preview:hover h2': {
+          textDecoration: 'underline',
+        },
+        '.post-preview p': {
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+          overflow: 'hidden',
+          margin: '6px 0',
+        },
+        '.post-preview small': {
+          color: theme.colors.muted,
         },
         'main article + a': {
           display: 'inline-block',
