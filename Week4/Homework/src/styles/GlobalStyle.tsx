@@ -1,0 +1,108 @@
+import { Global } from '@emotion/react';
+
+export default function GlobalStyle() {
+  return (
+    <Global
+      styles={(theme) => ({
+        '*': {
+          boxSizing: 'border-box',
+        },
+        body: {
+          margin: 0,
+          minWidth: 320,
+          backgroundColor: theme.colors.background,
+          color: theme.colors.text,
+          fontFamily: '"Pretendard", "Malgun Gothic", system-ui, sans-serif',
+          lineHeight: 1.6,
+        },
+        '#root': {
+          minHeight: '100dvh',
+        },
+        '.board-header': {
+          backgroundColor: theme.colors.surface,
+          borderBottom: `1px solid ${theme.colors.border}`,
+        },
+        '.board-header-inner': {
+          width: 'calc(100% - 48px)',
+          maxWidth: 960,
+          margin: '0 auto',
+          padding: '16px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+        },
+        '.board-brand': {
+          color: theme.colors.text,
+          fontWeight: 700,
+          textDecoration: 'none',
+        },
+        '.board-part': {
+          marginLeft: 12,
+          color: theme.colors.muted,
+          fontSize: 14,
+        },
+        '.board-header nav': {
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 16,
+        },
+        '.board-header nav a': {
+          color: theme.colors.text,
+        },
+        '.board-header nav a[aria-current="page"]': {
+          color: theme.colors.primary,
+          fontWeight: 700,
+        },
+        'main a': {
+          color: theme.colors.primary,
+        },
+        '.post-preview': {
+          marginTop: 24,
+          padding: 16,
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: 8,
+        },
+        '.post-preview h2': {
+          margin: 0,
+          fontSize: 18,
+        },
+        'main article + a': {
+          display: 'inline-block',
+          marginTop: 20,
+        },
+        main: {
+          width: 'calc(100% - 48px)',
+          maxWidth: 960,
+          margin: '48px auto',
+          padding: 32,
+          backgroundColor: theme.colors.surface,
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: 12,
+        },
+        h1: {
+          margin: '0 0 12px',
+          fontSize: 28,
+        },
+        p: {
+          margin: 0,
+          color: theme.colors.muted,
+        },
+        'button, input, textarea, select': {
+          font: 'inherit',
+        },
+        button: {
+          cursor: 'pointer',
+        },
+        'button:disabled': {
+          cursor: 'not-allowed',
+        },
+        ':focus-visible': {
+          outline: `2px solid ${theme.colors.primary}`,
+          outlineOffset: 3,
+        },
+      })}
+    />
+  );
+}
