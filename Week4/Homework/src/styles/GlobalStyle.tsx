@@ -92,6 +92,14 @@ export default function GlobalStyle() {
         '.auth-submit:disabled': {
           opacity: 0.55,
         },
+        '.auth-list-button': {
+          marginTop: 12,
+          padding: '8px 12px',
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: 6,
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.primary,
+        },
         '.post-search': {
           display: 'grid',
           gap: 8,

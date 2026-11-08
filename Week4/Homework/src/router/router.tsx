@@ -4,9 +4,16 @@ import AuthPage from '../pages/AuthPage';
 import PostCreatePage from '../pages/PostCreatePage';
 import PostDetailPage from '../pages/PostDetailPage';
 import PostListPage from '../pages/PostListPage';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/posts" replace /> },
+  {
+    path: '/',
+    Component: function HomeRedirect() {
+      const authorizationCode = useAuthStore((state) => state.session?.authorizationCode);
+      return <Navigate to={authorizationCode ? '/posts' : '/auth'} replace />;
+    },
+  },
   { path: '/auth', Component: AuthPage },
   {
     Component: BoardLayout,
