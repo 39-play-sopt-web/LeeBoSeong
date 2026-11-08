@@ -166,6 +166,9 @@ export default function GlobalStyle() {
         '.post-form textarea': {
           resize: 'vertical',
         },
+        '.post-form-error': {
+          color: '#a32929',
+        },
         '.post-form button, .post-detail-actions button': {
           justifySelf: 'start',
           marginTop: 8,
