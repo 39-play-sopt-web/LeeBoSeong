@@ -65,6 +65,16 @@ export default function GlobalStyle() {
         'main a': {
           color: theme.colors.primary,
         },
+        '.auth-screen': {
+          display: 'grid',
+          placeItems: 'center',
+          minHeight: '100dvh',
+          padding: '24px 0',
+        },
+        '.auth-screen > main': {
+          maxWidth: 424,
+          margin: 0,
+        },
         '.auth-form': {
           display: 'grid',
           gap: 12,
