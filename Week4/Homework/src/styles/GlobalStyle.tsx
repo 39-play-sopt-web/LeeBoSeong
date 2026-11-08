@@ -166,7 +166,7 @@ export default function GlobalStyle() {
         '.post-form textarea': {
           resize: 'vertical',
         },
-        '.post-form button, .post-edit-button': {
+        '.post-form button, .post-detail-actions button': {
           justifySelf: 'start',
           marginTop: 8,
           padding: '8px 16px',
@@ -175,13 +175,13 @@ export default function GlobalStyle() {
           backgroundColor: theme.colors.primary,
           color: theme.colors.surface,
         },
-        '.post-form button:disabled': {
+        '.post-form button:disabled, .post-detail-actions button:disabled': {
           opacity: 0.55,
         },
-        '.post-edit-button': {
+        '.post-detail-actions button': {
           marginTop: 16,
         },
-        '.post-form-actions': {
+        '.post-form-actions, .post-detail-actions': {
           display: 'flex',
           gap: 8,
         },

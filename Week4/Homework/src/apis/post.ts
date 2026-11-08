@@ -35,6 +35,11 @@ type UpdatePostInput = {
   authorizationCode: string;
 };
 
+type DeletePostInput = {
+  postId: number;
+  authorizationCode: string;
+};
+
 export async function getPosts(keyword: string) {
   const { data: response } = await apiClient.get<PostListResponse>('/posts', {
     params: { keyword: keyword || undefined, size: 30 },
@@ -85,4 +90,14 @@ export async function updatePost({ postId, title, content, authorizationCode }: 
   }
 
   return response.data;
+}
+
+export async function deletePost({ postId, authorizationCode }: DeletePostInput) {
+  const { data: response } = await apiClient.delete<{ isSuccess: boolean }>(`/posts/${postId}`, {
+    headers: { Authorization: authorizationCode },
+  });
+
+  if (!response.isSuccess) {
+    throw new Error('게시글을 삭제하지 못했습니다.');
+  }
 }

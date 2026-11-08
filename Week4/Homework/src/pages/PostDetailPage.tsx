@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router';
-import { getPostById, updatePost } from '../apis/post';
+import { Link, useNavigate, useParams } from 'react-router';
+import { deletePost, getPostById, updatePost } from '../apis/post';
 import { useAuthStore } from '../stores/useAuthStore';
 
 type EditDraft = {
@@ -18,13 +18,14 @@ export default function PostDetailPage() {
   const draft = editDraft?.postId === id ? editDraft : null;
   const canSave = Boolean(draft?.title.trim() && draft.content.trim());
   const authorizationCode = useAuthStore((state) => state.session?.authorizationCode);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: post, isPending, isError } = useQuery({
     queryKey: ['post', id], // 게시글별로 캐시를 구분.
     queryFn: () => getPostById(id),
     enabled: isValidId,
   });
-  const { mutate, isPending: isUpdating } = useMutation({
+  const { mutate: savePost, isPending: isUpdating } = useMutation({
     mutationFn: updatePost,
     onSuccess: async (_post, { postId }) => {
       await Promise.all([
@@ -33,6 +34,27 @@ export default function PostDetailPage() {
       ]);
     },
   });
+  const { mutate: removePost, isPending: isDeleting } = useMutation({
+    mutationFn: deletePost,
+    onSuccess: (_result, { postId }) => {
+      queryClient.removeQueries({ queryKey: ['post', postId], exact: true });
+      return queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+
+  function handleDelete() {
+    if (!authorizationCode || isUpdating || isDeleting) return;
+    if (!window.confirm('이 게시글을 삭제할까요?')) return;
+
+    removePost({ postId: id, authorizationCode }, {
+      onSuccess: () => {
+        void navigate('/posts', { replace: true });
+      },
+      onError: () => {
+        window.alert('게시글 삭제에 실패했습니다. 다시 시도해주세요.');
+      },
+    });
+  }
 
   return (
     <>
@@ -49,7 +71,7 @@ export default function PostDetailPage() {
                 event.preventDefault();
                 if (!authorizationCode || !canSave || isUpdating) return;
 
-                mutate({ ...draft, authorizationCode }, {
+                savePost({ ...draft, authorizationCode }, {
                   onSuccess: () => {
                     setEditDraft(null);
                     window.alert('게시글을 수정했습니다.');
@@ -91,13 +113,18 @@ export default function PostDetailPage() {
                 작성자: {post.author} · 작성일: <time dateTime={post.createdAt}>{post.createdAt.slice(0, 10)}</time>
               </p>
               <p className="post-detail-content">{post.content}</p>
-              <button
-                type="button"
-                className="post-edit-button"
-                onClick={() => setEditDraft({ postId: id, title: post.title, content: post.content })}
-              >
-                수정
-              </button>
+              <div className="post-detail-actions">
+                <button
+                  type="button"
+                  disabled={isDeleting || isUpdating}
+                  onClick={() => setEditDraft({ postId: id, title: post.title, content: post.content })}
+                >
+                  수정
+                </button>
+                <button type="button" disabled={isDeleting || isUpdating} onClick={handleDelete}>
+                  삭제
+                </button>
+              </div>
             </>
           )}
         </article>
