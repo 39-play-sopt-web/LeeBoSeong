@@ -22,7 +22,7 @@ export default function PostCreatePage() {
     <>
       <h1>게시글 작성</h1>
       <form
-        className="post-create-form"
+        className="post-form"
         onSubmit={(event) => {
           event.preventDefault();
           if (!authorizationCode || !canSubmit || isPending) return;

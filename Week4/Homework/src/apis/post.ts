@@ -28,6 +28,13 @@ type CreatePostInput = {
   authorizationCode: string;
 };
 
+type UpdatePostInput = {
+  postId: number;
+  title: string;
+  content: string;
+  authorizationCode: string;
+};
+
 export async function getPosts(keyword: string) {
   const { data: response } = await apiClient.get<PostListResponse>('/posts', {
     params: { keyword: keyword || undefined, size: 30 },
@@ -61,6 +68,20 @@ export async function createPost({ title, content, author, authorizationCode }: 
 
   if (!response.isSuccess || !response.data) {
     throw new Error('게시글을 작성하지 못했습니다.');
+  }
+
+  return response.data;
+}
+
+export async function updatePost({ postId, title, content, authorizationCode }: UpdatePostInput) {
+  const { data: response } = await apiClient.put<PostDetailResponse>(
+    `/posts/${postId}`,
+    { title, content },
+    { headers: { Authorization: authorizationCode } },
+  );
+
+  if (!response.isSuccess || !response.data) {
+    throw new Error('게시글을 수정하지 못했습니다.');
   }
 
   return response.data;

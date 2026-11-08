@@ -152,21 +152,21 @@ export default function GlobalStyle() {
         '.post-preview small': {
           color: theme.colors.muted,
         },
-        '.post-create-form': {
+        '.post-form': {
           display: 'grid',
           gap: 8,
           maxWidth: 560,
         },
-        '.post-create-form input, .post-create-form textarea': {
+        '.post-form input, .post-form textarea': {
           width: '100%',
           padding: '8px 12px',
           border: `1px solid ${theme.colors.border}`,
           borderRadius: 6,
         },
-        '.post-create-form textarea': {
+        '.post-form textarea': {
           resize: 'vertical',
         },
-        '.post-create-form button': {
+        '.post-form button, .post-edit-button': {
           justifySelf: 'start',
           marginTop: 8,
           padding: '8px 16px',
@@ -175,8 +175,19 @@ export default function GlobalStyle() {
           backgroundColor: theme.colors.primary,
           color: theme.colors.surface,
         },
-        '.post-create-form button:disabled': {
+        '.post-form button:disabled': {
           opacity: 0.55,
+        },
+        '.post-edit-button': {
+          marginTop: 16,
+        },
+        '.post-form-actions': {
+          display: 'flex',
+          gap: 8,
+        },
+        '.post-form-actions button[type="button"]': {
+          backgroundColor: theme.colors.background,
+          color: theme.colors.text,
         },
         '.post-detail': {
           overflowWrap: 'anywhere',

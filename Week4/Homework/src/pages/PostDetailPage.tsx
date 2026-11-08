@@ -1,15 +1,37 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
-import { getPostById } from '../apis/post';
+import { getPostById, updatePost } from '../apis/post';
+import { useAuthStore } from '../stores/useAuthStore';
+
+type EditDraft = {
+  postId: number;
+  title: string;
+  content: string;
+};
 
 export default function PostDetailPage() {
   const { postId } = useParams();
   const id = Number(postId);
   const isValidId = Number.isSafeInteger(id) && id > 0;
+  const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
+  const draft = editDraft?.postId === id ? editDraft : null;
+  const canSave = Boolean(draft?.title.trim() && draft.content.trim());
+  const authorizationCode = useAuthStore((state) => state.session?.authorizationCode);
+  const queryClient = useQueryClient();
   const { data: post, isPending, isError } = useQuery({
     queryKey: ['post', id], // 게시글별로 캐시를 구분.
     queryFn: () => getPostById(id),
     enabled: isValidId,
+  });
+  const { mutate, isPending: isUpdating } = useMutation({
+    mutationFn: updatePost,
+    onSuccess: async (_post, { postId }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['post', postId] }),
+        queryClient.invalidateQueries({ queryKey: ['posts'] }),
+      ]);
+    },
   });
 
   return (
@@ -20,11 +42,64 @@ export default function PostDetailPage() {
       {isError && <p role="alert">게시글을 불러오지 못했습니다.</p>}
       {post && (
         <article className="post-detail">
-          <h2>{post.title}</h2>
-          <p>
-            작성자: {post.author} · 작성일: <time dateTime={post.createdAt}>{post.createdAt.slice(0, 10)}</time>
-          </p>
-          <p className="post-detail-content">{post.content}</p>
+          {draft ? (
+            <form
+              className="post-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!authorizationCode || !canSave || isUpdating) return;
+
+                mutate({ ...draft, authorizationCode }, {
+                  onSuccess: () => {
+                    setEditDraft(null);
+                    window.alert('게시글을 수정했습니다.');
+                  },
+                  onError: () => {
+                    window.alert('게시글 수정에 실패했습니다. 다시 시도해주세요.');
+                  },
+                });
+              }}
+            >
+              <label htmlFor="edit-title">제목</label>
+              <input
+                id="edit-title"
+                value={draft.title}
+                onChange={(event) => setEditDraft({ ...draft, title: event.target.value })}
+                maxLength={50}
+                disabled={isUpdating}
+                required
+              />
+              <label htmlFor="edit-content">본문</label>
+              <textarea
+                id="edit-content"
+                value={draft.content}
+                onChange={(event) => setEditDraft({ ...draft, content: event.target.value })}
+                rows={6}
+                maxLength={1000}
+                disabled={isUpdating}
+                required
+              />
+              <div className="post-form-actions">
+                <button type="submit" disabled={!canSave || isUpdating}>저장</button>
+                <button type="button" disabled={isUpdating} onClick={() => setEditDraft(null)}>취소</button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <h2>{post.title}</h2>
+              <p>
+                작성자: {post.author} · 작성일: <time dateTime={post.createdAt}>{post.createdAt.slice(0, 10)}</time>
+              </p>
+              <p className="post-detail-content">{post.content}</p>
+              <button
+                type="button"
+                className="post-edit-button"
+                onClick={() => setEditDraft({ postId: id, title: post.title, content: post.content })}
+              >
+                수정
+              </button>
+            </>
+          )}
         </article>
       )}
       <Link to="/posts" className="post-list-link">게시글 목록으로 돌아가기</Link>
