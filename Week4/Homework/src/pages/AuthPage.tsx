@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router';
+import { Navigate } from 'react-router';
 import { issueAuthorizationCode, PARTS, type Part } from '../apis/member';
 import { useAuthStore } from '../stores/useAuthStore';
 
 export default function AuthPage() {
   const [part, setPart] = useState<Part | ''>('');
   const [storageError, setStorageError] = useState(false);
+  const authorizationCode = useAuthStore((state) => state.session?.authorizationCode);
   const saveSession = useAuthStore((state) => state.saveSession);
-  const navigate = useNavigate();
   const { mutate, isPending, isError } = useMutation({
     mutationFn: issueAuthorizationCode,
   });
+
+  if (authorizationCode) {
+    return <Navigate to="/posts" replace />;
+  }
 
   return (
     <main>
@@ -29,10 +33,7 @@ export default function AuthPage() {
                 saveSession({ authorizationCode, part: issuedPart });
               } catch {
                 setStorageError(true);
-                return;
               }
-
-              void navigate('/posts', { replace: true });
             },
           });
         }}
@@ -59,7 +60,6 @@ export default function AuthPage() {
         {isError && <p role="alert">회원 코드 발급에 실패했습니다. 다시 시도해주세요.</p>}
         {storageError && <p role="alert">회원 코드를 저장할 수 없습니다. 브라우저 저장 설정을 확인해주세요.</p>}
       </form>
-      <Link to="/posts">게시글 목록으로 이동</Link>
     </main>
   );
 }

@@ -152,7 +152,41 @@ export default function GlobalStyle() {
         '.post-preview small': {
           color: theme.colors.muted,
         },
-        'main article + a': {
+        '.post-create-form': {
+          display: 'grid',
+          gap: 8,
+          maxWidth: 560,
+        },
+        '.post-create-form input, .post-create-form textarea': {
+          width: '100%',
+          padding: '8px 12px',
+          border: `1px solid ${theme.colors.border}`,
+          borderRadius: 6,
+        },
+        '.post-create-form textarea': {
+          resize: 'vertical',
+        },
+        '.post-create-form button': {
+          justifySelf: 'start',
+          marginTop: 8,
+          padding: '8px 16px',
+          border: 0,
+          borderRadius: 6,
+          backgroundColor: theme.colors.primary,
+          color: theme.colors.surface,
+        },
+        '.post-create-form button:disabled': {
+          opacity: 0.55,
+        },
+        '.post-detail': {
+          overflowWrap: 'anywhere',
+        },
+        '.post-detail-content': {
+          marginTop: 16,
+          color: theme.colors.text,
+          whiteSpace: 'pre-wrap',
+        },
+        'main a.post-list-link': {
           display: 'inline-block',
           marginTop: 20,
         },

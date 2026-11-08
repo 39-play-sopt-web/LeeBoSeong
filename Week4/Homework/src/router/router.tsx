@@ -6,7 +6,7 @@ import PostDetailPage from '../pages/PostDetailPage';
 import PostListPage from '../pages/PostListPage';
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/auth" replace /> },
+  { path: '/', element: <Navigate to="/posts" replace /> },
   { path: '/auth', Component: AuthPage },
   {
     Component: BoardLayout,

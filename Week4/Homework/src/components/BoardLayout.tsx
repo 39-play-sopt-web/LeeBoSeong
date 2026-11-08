@@ -1,14 +1,12 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router';
+import { Link, Navigate, NavLink, Outlet } from 'react-router';
 import { useAuthStore } from '../stores/useAuthStore';
 
 export default function BoardLayout() {
-  const part = useAuthStore((state) => state.session?.part);
+  const session = useAuthStore((state) => state.session);
   const clearSession = useAuthStore((state) => state.clearSession);
-  const navigate = useNavigate();
 
-  function handleLogout() {
-    clearSession();
-    void navigate('/auth', { replace: true });
+  if (!session?.authorizationCode) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (
@@ -17,12 +15,12 @@ export default function BoardLayout() {
         <div className="board-header-inner">
           <div>
             <Link to="/posts" className="board-brand">SOPT 게시판</Link>
-            <span className="board-part">{part ?? '파트 미선택'}</span>
+            <span className="board-part">{session.part}</span>
           </div>
           <nav aria-label="게시판 메뉴">
             <NavLink to="/posts" end>게시글 목록</NavLink>
             <NavLink to="/posts/new">글쓰기</NavLink>
-            <button type="button" onClick={handleLogout}>로그아웃</button>
+            <button type="button" onClick={clearSession}>로그아웃</button>
           </nav>
         </div>
       </header>

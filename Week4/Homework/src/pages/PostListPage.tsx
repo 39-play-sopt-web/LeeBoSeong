@@ -32,7 +32,6 @@ export default function PostListPage() {
             placeholder="검색어를 입력하세요"
             value={searchInput}
             maxLength={50}
-            aria-describedby="post-search-hint"
             onChange={(event) => {
               const value = event.target.value;
               setSearchInput(value);
@@ -41,7 +40,6 @@ export default function PostListPage() {
           />
           <button type="submit" disabled={!canSearch}>검색</button>
         </div>
-        <p id="post-search-hint">검색어를 2~50자로 입력해주세요.</p>
       </form>
 
       {isPending && <p role="status">게시글을 불러오는 중입니다.</p>}
