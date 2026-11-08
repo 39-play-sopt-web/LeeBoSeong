@@ -71,7 +71,9 @@ export default function PostCreatePage() {
       >
         <p>단계 {step + 1} / {POST_STEPS.length}</p>
         <label htmlFor={inputProps.id}>{field.label}</label>
+        {/* content - 본문. 입력 칸의 기본 높이 6. */}
         {field.name === 'content' ? <textarea {...inputProps} rows={6} /> : <input {...inputProps} />}
+        {/* 입력값 검사 */}
         {field.name === 'content' && <p>{value.length} / {field.limit}</p>}
         {isTooLong && (
           <p id="post-field-error" className="post-form-error" role="alert">
