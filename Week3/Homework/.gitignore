@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.vite/
+*.local
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+*.test.*
+*.spec.*
+src/test/
+.local-tests/
+vitest.config.*
+coverage/
